@@ -7,6 +7,9 @@ import os
 import pandas as pd
 logging.basicConfig(format='[%(levelname)s] - %(message)s', level=logging.INFO)
 
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
 
 BATCH_SIZE = 4
 NUM_CLASSES = 10
@@ -14,8 +17,8 @@ EPOCHS = 2
 
 
 torch.manual_seed(123)
-train_path = "sample_data/train/"
-test_path = "sample_data/test/"
+train_path = "data/train/"
+test_path = "data/test/"
 dataloader = LoadData(train_path=train_path, test_path=test_path, transform=True, 
                       image_size=(224,224))
 

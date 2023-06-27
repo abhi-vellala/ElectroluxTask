@@ -21,7 +21,9 @@ class VGGNet:
         self.model = vgg16_bn(weights=weights, progress=True)
         self.criterion = torch.nn.CrossEntropyLoss()
         self.optimizer = optim.SGD(self.model.parameters(), lr=lr, momentum=momentum)
-        self.device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
+        self.device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
+        if torch.cuda.is_available():
+            self.model.cuda()
   
     def Train(self):
         # start = torch.cuda.Event(enable_timing=True)
@@ -45,7 +47,7 @@ class VGGNet:
             running_loss += loss.item()
             train_losses.append(loss.item())
             preds = torch.argmax(outputs, 1)
-            accuracy = Accuracy(task="multiclass", num_classes=self.num_classes)
+            accuracy = Accuracy(task="multiclass", num_classes=self.num_classes).to(self.device)
             acc = accuracy(preds, labels).item()
             accuracies.append(acc)
             print(f"\t Batch: {i}/{len(trainloader)}")
@@ -91,7 +93,7 @@ class VGGNet:
                 loss = self.criterion(output, labels)
                 test_losses.append(loss.item())
                 preds = torch.argmax(output, dim=1)
-                accuracy = Accuracy(task="multiclass", num_classes=self.num_classes)
+                accuracy = Accuracy(task="multiclass", num_classes=self.num_classes).to(self.device)
                 acc = accuracy(preds, labels).item()
                 test_accuracies.append(acc)
                 
