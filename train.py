@@ -17,8 +17,8 @@ EPOCHS = 2
 
 
 torch.manual_seed(123)
-train_path = "data/train/"
-test_path = "data/test/"
+train_path = "sample_data/train/"
+test_path = "sample_data/test/"
 dataloader = LoadData(train_path=train_path, test_path=test_path, transform=True, 
                       image_size=(224,224))
 

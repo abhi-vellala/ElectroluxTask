@@ -24,6 +24,8 @@ class VGGNet:
         self.device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
         if torch.cuda.is_available():
             self.model.cuda()
+
+        logging.info(f"Device is set to: {self.device}")
   
     def Train(self):
         # start = torch.cuda.Event(enable_timing=True)
