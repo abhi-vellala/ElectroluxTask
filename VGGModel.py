@@ -31,6 +31,7 @@ class VGGNet:
         # start.record()
         train_losses = []
         accuracies = []
+        self.model.train()
         for i, (inputs, labels) in enumerate(trainloader):
             # inputs, labels = data
             inputs, labels = inputs.to(self.device), labels.to(self.device)
@@ -61,20 +62,20 @@ class VGGNet:
         val_losses = []
         val_accuracies = []
         self.model.eval()
-        with torch.no_grad():
-            for i, (images, labels) in enumerate(validloader):
-                images, labels = images.to(self.device), labels.to(self.device)
-                output = self.model(images)
-                loss = self.criterion(output, labels)
-                val_losses.append(loss.item())
-                preds = torch.argmax(output, dim=1)
-                accuracy = Accuracy(task="multiclass", num_classes=self.num_classes)
-                acc = accuracy(preds, labels).item()
-                val_accuracies.append(acc)
-                
-                print(f"\t Batch: {i}/{len(validloader)}")
-                print(f"\t\t Current Loss: {round(loss.item(),4)}")
-                print(f"\t\t Accuracy: {round(acc,2)}")
+        # with torch.no_grad():
+        for i, (images, labels) in enumerate(validloader):
+            images, labels = images.to(self.device), labels.to(self.device)
+            output = self.model(images)
+            loss = self.criterion(output, labels)
+            val_losses.append(loss.item())
+            preds = torch.argmax(output, dim=1)
+            accuracy = Accuracy(task="multiclass", num_classes=self.num_classes)
+            acc = accuracy(preds, labels).item()
+            val_accuracies.append(acc)
+            
+            print(f"\t Batch: {i}/{len(validloader)}")
+            print(f"\t\t Current Loss: {round(loss.item(),4)}")
+            print(f"\t\t Accuracy: {round(acc,2)}")
                 
         return val_losses, val_accuracies
     
@@ -99,6 +100,9 @@ class VGGNet:
                 print(f"\t\t Accuracy: {round(acc,2)}")
                 
         return test_losses, test_accuracies
+    
+    def saveModel(self, save_path):
+        torch.save(self.model.state_dict(), save_path)
         
                 
                 
