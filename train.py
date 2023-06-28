@@ -12,6 +12,8 @@ logging.basicConfig(format='[%(levelname)s] - %(message)s', level=logging.INFO)
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
 def sec_to_hours(seconds):
     a=str(int(seconds//3600))
     b=str(int((seconds%3600)//60))
@@ -20,8 +22,8 @@ def sec_to_hours(seconds):
     return d
 
 
-BATCH_SIZE = 4
-NUM_CLASSES = 10
+BATCH_SIZE = 16
+NUM_CLASSES = 7
 EPOCHS = 2
 
 
@@ -31,9 +33,9 @@ test_path = "sample_data/test/"
 dataloader = LoadData(train_path=train_path, test_path=test_path, transform=True, 
                       image_size=(224,224))
 
-loader = dataloader.PrepareLoader(batch_size=BATCH_SIZE, shuffle=True)
+loader = dataloader.PrepareLoader(batch_size=BATCH_SIZE, train_ratio=0.8, shuffle=True)
 
-model = VGGNet(dataloader=loader, num_classes=NUM_CLASSES)
+model = VGGNet(dataloader=loader, num_classes=NUM_CLASSES, pretrained=False)
 
 res_data = pd.DataFrame(columns=["epoch", "train_loss", "train_accuracy", 
                                  "valid_loss", "valid_accuracy",
@@ -51,8 +53,8 @@ for epoch in range(EPOCHS):
     logging.info(f"Epoch: {epoch+1} - TESTING")
     test_loss, test_accuracies = model.Test()
     print(f"Test Loss: {np.mean(test_loss)}, Test Accuracy: {np.mean(test_accuracies)}")
-    model_save_path = os.path.join('model_checkpoints','epoch'+epoch+'_model.ckpt')
-    model.saveModel()
+    model_save_path = os.path.join('model_checkpoints','epoch'+str(epoch)+'_model.ckpt')
+    model.saveModel(model_save_path)
     res_data.loc[idx, "epoch"] = epoch
     res_data.loc[idx, "train_loss"] = np.mean(train_loss)
     res_data.loc[idx, "train_accuracy"] = np.mean(train_accuracies)

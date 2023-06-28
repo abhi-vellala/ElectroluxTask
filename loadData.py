@@ -6,6 +6,7 @@ from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image
 import logging
 logging.basicConfig(format='[%(levelname)s] - %(message)s', level=logging.INFO)
 
@@ -27,13 +28,13 @@ class LoadData:
         
         # self.device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
         
-    def TrainLoader(self):
+    def TrainLoader(self, train_ratio):
         
         full_train_dataset = ImageFolder(root=self.train_path, transform=self.transform)
         logging.info(f"Number of training images Loaded: {len(full_train_dataset)}")
         train_dataset, valid_dataset = torch.utils.data.random_split(full_train_dataset, 
-                                                                     [0.7,0.3])
-        logging.info(f"Train-Validation Split ratio: (70, 30)")
+                                                                     [train_ratio,1-train_ratio])
+        logging.info(f"Train-Validation Split ratio: ({train_ratio*100}, {(1-train_ratio)*100})")
         logging.info(f"Train set - {len(train_dataset)}, Validation Set - {len(valid_dataset)}")
         return train_dataset, valid_dataset
     
@@ -42,14 +43,27 @@ class LoadData:
         logging.info(f"Number of testing images loaded: {len(test_dataset)}")
         return test_dataset
     
-    def PrepareLoader(self, batch_size, shuffle):
-        train_dataset, valid_dataset = self.TrainLoader()
+    def PrepareLoader(self, batch_size, train_ratio, shuffle):
+        train_dataset, valid_dataset = self.TrainLoader(train_ratio)
         test_dataset = self.TestLoader()
         trainloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
         validloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=shuffle)
         testloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=shuffle)
         logging.info("Data Loading Complete!")
         return {"train": trainloader, "valid": validloader, "test": testloader}
+    
+class InferenceLoader(LoadData):
+    def __init__(self, img_path, transform=False, image_size=None) -> None:
+        super().__init__(train_path=None, test_path=None, transform=transform, image_size=image_size)
+        self.img_path = img_path
+        self.device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
+    
+    def imgGen(self):
+        img_open = Image.open(self.img_path)
+        img = self.transform(img_open).unsqueeze(0).to(self.device)
+        logging.info("Image Loaded!")
+        return img
+
     
 class TestDataLoader(LoadData):
     def __init__(self, train_path, test_path, transform=False, image_size=None) -> None:
